@@ -10,31 +10,58 @@ export default function Home() {
   let [value, setValue] = React.useState<string>('')
   let [converted, setConverted] = React.useState<string>('')
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (e: { target: { value: any } }) => {
     let inputValue = e.target.value
     setValue(inputValue)
   }
 
+  const minValue = (arr: number[]):number => {
+    return arr.reduce(function(acc: number, crr: number) {
+      if (crr < acc && crr !== -1)
+        return crr;
+      return acc;
+    }, Infinity);
+  }
   const convertEmails = (e: string) => {
     let text = e
     let result = ''
     if (e) {
       while (text.length > 0) {
         if (text.includes('@')) {
-          let init = Math.max(text.lastIndexOf('{'), text.lastIndexOf('('), text.lastIndexOf('['));
+
+          let init = Math.max(
+            text.lastIndexOf('{'), 
+            text.lastIndexOf('('), 
+            text.lastIndexOf('[')
+          );
           let str = text.slice(init);
           if (str.lastIndexOf('@')) {
+
             let domain = str.slice(str.lastIndexOf('@'));
-            domain = domain.split(domain.indexOf('\n') > 0 ? '\n' : ' ')[0];
-            // if (domain.lastIndexOf(`,`)){
-            //   domain = domain.slice(0, domain.lastIndexOf(','))
-            // } else if ( domain.lastIndexOf(';') ){
-            //   domain = domain.slice(0, domain.lastIndexOf(';'))
+            console.log('domain', domain)
+            let arr = [
+              domain.indexOf(' '), 
+              domain.indexOf('\n'), 
+              domain.indexOf(','), 
+              domain.indexOf(';')
+            ]
+
+            let min = minValue(arr);
+            console.log('min', min)
+
+            domain = domain.slice(0,min);
+
+            console.log('domain2', domain)
+
+
+            // if (left.lastIndexOf(`,`)){
+            //   left = left.slice(0, left.lastIndexOf(','))
+            // } else if ( left.lastIndexOf(';') ){
+            //   left = left.slice(0, left.lastIndexOf(';'))
             // }
             
             let ids = str.slice(1, str.lastIndexOf('@') - 1);
             ids.split(',').map(id => result += `${result ? ', ' : ''}${id.trim()}${domain}`)
-            console.log('ids', ids);
     
             setConverted(result)
            text = text.substring(0, init)
@@ -80,15 +107,15 @@ export default function Home() {
 
 
 /*
-[daniel_yago, torres.gomes, luca.leonardo]@gmail.com; {daniel_yago, torres.gomes, luca.leonardo}@edu.com.br
+[daniel_yago, torres.gomes, luca.leonardo]@gmail.com; {daniel_yago, torres.gomes, luca.leonardo}@edu.com.br ✅
 
-{daniel_yago, torres.gomes, luca.leonardo}@edu.com.br
+{daniel_yago, torres.gomes, luca.leonardo}@edu.com.br ✅
 
-[daniel_yago, torres.gomes, luca.leonardo]@gmail.com são os emails
+[daniel_yago, torres.gomes, luca.leonardo]@gmail.com são os emails ✅
 
-(daniel_yago,luca.leonardo, torres.gomes)@hotmail.com
+(daniel_yago,luca.leonardo, torres.gomes)@hotmail.com ✅
 
-[daniel_yago, torres.gomes, luca.leonardo]@gmail.com, {daniel_yago, torres.gomes, luca.leonardo}@edu.com.br
+[daniel_yago, torres.gomes, luca.leonardo]@gmail.com, {daniel_yago, torres.gomes, luca.leonardo}@edu.com.br ✅
 
 uc´ıola Alves Magalhaes, Daniela Maciel Pinto ˜
 1Empresa Brasileira de Pesquisa Agropecuaria (Embrapa) ´
@@ -98,7 +125,7 @@ luciola.magalhaes, daniela.maciel}@embrapa.br
 Abstract. Desertification is the land-degradation process that occurs in arid,
 semi-arid, and dry sub-humid zones as a result of the joint action of natural
 source and anthropic factors. In Brazil, most of the susceptible areas are located
-in the Caatinga biome. This paper presents a data platform for character
+in the Caatinga biome. This paper presents a data platform for character  ✅
 
 Camila D. Cabral1
 , Rafael F. de Lima2
