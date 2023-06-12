@@ -113,8 +113,10 @@ export default function Home() {
               placeholder='{nome, nome_sobre, teste}@meuemail.com'
               size='lg'
             />
+
             <Button colorScheme='teal' onClick={() => {
               extractEmails(inputText)
+              setinputText('');
             }}>Converter</Button>
 
             <Text mb='8px'>Saída:</Text>
