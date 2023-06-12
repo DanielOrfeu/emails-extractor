@@ -6,72 +6,98 @@ import * as React from 'react'
 import { ChakraProvider, Textarea, Text, Stack, Button, ButtonGroup } from '@chakra-ui/react'
 
 export default function Home() {
-
-  let [value, setValue] = React.useState<string>('')
-  let [converted, setConverted] = React.useState<string>('')
-
+  const [inputText, setinputText] = React.useState<string>('');
+  const [extractedEmails, setextractedEmails] = React.useState<string>('');
+  const [arrobacount, setarrobacount] = React.useState<number>(0);
+  
   const handleInputChange = (e: { target: { value: any } }) => {
     let inputValue = e.target.value
-    setValue(inputValue)
+    setinputText(inputValue)
   }
-
+  
   const minValue = (arr: number[]):number => {
     return arr.reduce(function(acc: number, crr: number) {
-      if (crr < acc && crr !== -1)
-        return crr;
-      return acc;
-    }, Infinity);
+        if (crr < acc && crr !== -1)
+            return crr;
+        return acc;
+    }, Infinity); 
   }
-  const convertEmails = (e: string) => {
-    let text = e
-    let result = ''
-    if (e) {
-      while (text.length > 0) {
-        if (text.includes('@')) {
+  
+  const extractEmails = (e:string) => {
+      let text = e;
+      let res = '';
+      let removeText = 0;
+      setarrobacount(0);
+  
+      while (text.length > 0){
+          if (text.lastIndexOf('@') !== -1) {
+              let findArroba = text.lastIndexOf('@');
+              let sub = text.slice(0, findArroba);
+  
+              let domain = text.slice(findArroba)
+              let arr = [
+                  domain.indexOf(' '), 
+                  domain.indexOf('\n'), 
+                  domain.indexOf(','), 
+                  domain.indexOf(';'),
+                  //adicionar indexOf(0-9)
+                ]
+  
+  
+              let min = minValue(arr);
+              domain = domain.slice(0,min);
+  
+              let ids:string[] = []
+              let newLine = text[findArroba - 1] === '\n'
+              
+              if (
+                text[findArroba - (newLine ? 2 : 1)] === '}' ||
+                text[findArroba - (newLine ? 2 : 1)] === ')' ||
+                text[findArroba - (newLine ? 2 : 1)] === ']'
+              ) { //Se @ faz parte de conjunto
 
-          let init = Math.max(
-            text.lastIndexOf('{'), 
-            text.lastIndexOf('('), 
-            text.lastIndexOf('[')
-          );
-          let str = text.slice(init);
-          if (str.lastIndexOf('@')) {
+                let initIDS = Math.max(
+                    text.lastIndexOf('{'), 
+                    text.lastIndexOf('('), 
+                    text.lastIndexOf('[')
+                );
 
-            let domain = str.slice(str.lastIndexOf('@'));
-            console.log('domain', domain)
-            let arr = [
-              domain.indexOf(' '), 
-              domain.indexOf('\n'), 
-              domain.indexOf(','), 
-              domain.indexOf(';')
-            ]
+                removeText = initIDS;
 
-            let min = minValue(arr);
-            console.log('min', min)
+                let idsString = text.slice(initIDS + 1, findArroba - (newLine ? 2 : 1));
 
-            domain = domain.slice(0,min);
+                if (idsString.indexOf(',') !== -1){
+                    ids = idsString.split(',')
+                } else if (idsString.indexOf(';') !== -1){
+                    ids = idsString.split(';')
+                } else if (idsString.indexOf('|') !== -1){
+                    ids = idsString.split('|')
+                }
 
-            console.log('domain2', domain)
+            } else { //Se @ faz parte de individual
+                let initID:number = Math.max(
+                    sub.lastIndexOf(' '),
+                    sub.lastIndexOf('\n'),
+                    sub.lastIndexOf(','),
+                    sub.lastIndexOf(';'),
+                    sub.lastIndexOf('/'),
+                    sub.lastIndexOf('|'),
+                ) || 0;
 
+                removeText = initID;
 
-            // if (left.lastIndexOf(`,`)){
-            //   left = left.slice(0, left.lastIndexOf(','))
-            // } else if ( left.lastIndexOf(';') ){
-            //   left = left.slice(0, left.lastIndexOf(';'))
-            // }
-            
-            let ids = str.slice(1, str.lastIndexOf('@') - 1);
-            ids.split(',').map(id => result += `${result ? ', ' : ''}${id.trim()}${domain}`)
-    
-            setConverted(result)
-           text = text.substring(0, init)
+                let id:string = sub.slice(initID);
+                ids.push(id);
+            }
 
+            setarrobacount(arrobacount + 1);
+            ids.forEach(id => res += `${res ? ', ' : ''}${id.trim()}${domain}`)
+            setextractedEmails(res)
+          } else {
+            return
           }
-        } else {
-          text = ''
-        }
+          text = text.slice(0, removeText);
       }
-    }
   }
   
   return (
@@ -82,19 +108,19 @@ export default function Home() {
           <Stack w='60vw' spacing={5}>
           <Text mb='8px'>Conjunto de emais:</Text>
           <Textarea
-            value={value}
+            value={inputText}
             onChange={handleInputChange}
             placeholder='{nome, nome_sobre, teste}@meuemail.com'
             size='lg'
           />
           <Button colorScheme='teal' onClick={() => {
-            convertEmails(value)
+            extractEmails(inputText)
           }}>Converter</Button>
 
           <Text mb='8px'>Saída:</Text>
           <Textarea
             onChange={() => {}}
-            value={converted}
+            value={extractedEmails}
             size='lg'
           />
           </Stack>
@@ -107,7 +133,6 @@ export default function Home() {
 
 
 /*
-[daniel_yago, torres.gomes, luca.leonardo]@gmail.com; {daniel_yago, torres.gomes, luca.leonardo}@edu.com.br ✅
 
 {daniel_yago, torres.gomes, luca.leonardo}@edu.com.br ✅
 
@@ -139,13 +164,13 @@ camilacabralagro@gmail.com, lucas.aparecido@muz.ifsuldeminas.edu.br
 2Departamento Agronomia – Instituto Federal do Mato Grosso do Sul campus Naviraí 
 (IFMS) – Naviraí – MS – Brasil
 rafael.lima2@estudante.ifms.edu.br 
-3Departamento Computação – Instituto Federal do Sul de Minas Gerais campus 
+3Departamento Computação – Instituto Federal do Sul de Minas Gerais campus ✅
 
 2Empresa Brasileira de Pesquisa Agropecuaria (EMBRAPA – CPPSUL) ´
 Bage – RS – Brasil ´
 {samaramarques.aluno,alinelisboa.aluno,ericoamaral}
 @unipampa.edu.br, vinicius.lampert@embrapa.br
-Abstract. This paper addresses the compliance process of the General Data
+Abstract. This paper addresses the compliance process of the General Data ✅
 
 eral do Sul de Minas (IFSULDEMINAS)
 Muzambinho – MG - Brazil
@@ -153,50 +178,50 @@ joao.lorencone@estudante.ifms.edu.br,
 lucas.aparecido@muz.ifsuldeminas.edu.br,
 pedro.lorencone@estudante.ifms.edu.br, 
 guilherme.torsoni.ifms.edu.br
-Abstract. This study aimed to perform the agricultural zoning of cl
+Abstract. This study aimed to perform the agricultural zoning of cl ✅
 
 l
 vinilopes03@discente.ufg.br, roberto.oliveira@ueg.br, valdemarneto@ufg.br
-Abstract. Internet of Things (IoT) is a prominent technology in which everyda
+Abstract. Internet of Things (IoT) is a prominent technology in which everyda ✅
 
 
 deral do Espírito Santo (Ifes) – Campus Itapina
 Rodovia BR-259, Km 70, Colatina-ES, Brasil
 julionardi@ifes.edu.br, vitornicchioalves@gmail.com,
 junior_recla@hotmail.com, {fabianoruy, robson.posse}@ifes.edu.br 
-Abstract. Solutions of Internet-of-Things in Agriculture deal with devices an
+Abstract. Solutions of Internet-of-Things in Agriculture deal with devices an ✅
 
 Brasil
 eaa@discente.ifpe.edu.br, humberto.junior@garanhuns.ifpe.edu.br, 
 cosmo.rufino@afogados.ifpe.edu.br, fabio.marques@ifal.edu.br,
 pablo.radames@ifpa.edu.br
-Abstract. The moisture content present in seeds pl
+Abstract. The moisture content present in seeds pl ✅
 
 eira de Pesquisa Agropecuária – Embrapa, Juiz de Fora, MG – Brazil
 jonas.gomes@estudante.ufjf.br, {jose.david, 
 regina.braga}@ufjf.edu.br, bryan.barbosa@ice.ufjf.br, 
 {wagner.arbex, wneiton.gomes, leonardo.gravina}@embrapa.br
-Abstract. This work presents a systematic mapping related to Decision Suppor
+Abstract. This work presents a systematic mapping related to Decision Suppor ✅
 
 ge, RS – Brasil ´
 kim.moreles@hotmail.com, vinicius.lampert@embrapa.br
 erico.amaral@unipampa.edu.br
 Abstract. The demand for sustainability assessments of agricultural systems
-has been growing in recent years. Based on a specific method
+has been growing in recent years. Based on a specific method ✅
 
 il
 nsc.rodolfo@gmail.com, monicagiponi@gmail.com, 
 wellington.moreira@ifsudestemg.edu.br, vania.xavier@ifsudestemg.edu.br
-Resumo. O Manejo Integrado de Pragas (MIP) é uma ferramenta qu
+Resumo. O Manejo Integrado de Pragas (MIP) é uma ferramenta qu ✅
 
 s, SP
 {maria.fasiaben; stanley.oliveira; andre.moraes}@embrapa.br, 
 {maxwell.almeida; octavio.oliveira}@ibge.gov.br, gabeusebio@gmail.com
-Abstract. The objective of this work is to typify beef cattle producing
+Abstract. The objective of this work is to typify beef cattle producing  ✅
 
 Brasil
 alexandre.donizeti@ufabc.edu.br
 Abstract. This article aims to present a bibliometric analysis of the scientific
-production of authors linked to EMBRAPA considering the article
+production of authors linked to EMBRAPA considering the article ✅
 
 */
