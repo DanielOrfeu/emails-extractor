@@ -12,10 +12,12 @@ export default function Home() {
   const [arrobacount, setarrobacount] = React.useState<number>(0);
   
   const copyText = () => {
-    let textoCopiado = document.getElementById("outputEmails");
-    textoCopiado.select();
-    textoCopiado.setSelectionRange(0, 99999)
-    document.execCommand("copy");
+    let textoCopiado = document.getElementById("outputEmails") as HTMLInputElement;
+    if(textoCopiado) {
+      textoCopiado.select();
+      textoCopiado.setSelectionRange(0, 99999)
+      document.execCommand("copy");
+    }
   }
 
   const handleInputChange = (e: { target: { value: any } }) => {
