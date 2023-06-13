@@ -3,13 +3,21 @@
 import Image from 'next/image'
 import styles from './page.module.css'
 import * as React from 'react'
-import { ChakraProvider, Textarea, Text, Stack, Button, ButtonGroup, Input } from '@chakra-ui/react'
+import { ChakraProvider, Textarea, Text, Stack, Button, ButtonGroup, Input, HStack } from '@chakra-ui/react'
+import { theme } from './styles/theme'
 
 export default function Home() {
   const [inputText, setinputText] = React.useState<string>('');
   const [extractedEmails, setextractedEmails] = React.useState<string>('');
   const [arrobacount, setarrobacount] = React.useState<number>(0);
   
+  const copyText = () => {
+    let textoCopiado = document.getElementById("outputEmails");
+    textoCopiado.select();
+    textoCopiado.setSelectionRange(0, 99999)
+    document.execCommand("copy");
+  }
+
   const handleInputChange = (e: { target: { value: any } }) => {
     let inputValue = e.target.value
     setinputText(inputValue)
@@ -101,7 +109,7 @@ export default function Home() {
   }
   
   return (
-    <ChakraProvider>
+    <ChakraProvider resetCSS theme={theme}>
       <main className={styles.main}>
         <Stack w='90vw' spacing={3} justifyContent={'center'} alignItems={'center'}>
           <Text fontSize='5xl'>Email formatter</Text>
@@ -111,7 +119,7 @@ export default function Home() {
               value={inputText}
               onChange={handleInputChange}
               placeholder='{nome, nome_sobre, teste}@meuemail.com'
-              size='lg'
+              size='md'
             />
 
             <Button colorScheme='teal' onClick={() => {
@@ -121,10 +129,14 @@ export default function Home() {
 
             <Text mb='8px'>Saída:</Text>
             <Textarea
+              id='outputEmails'
               onChange={() => {}}
               value={extractedEmails}
-              size='lg'
+              size='md'
             />
+            <Button colorScheme='teal' backgroundColor={'blue.300'} onClick={() => {
+              copyText()
+            }}>Copiar</Button>
 
             <Text mb='8px'>Arrobas extraídos (Ctrl + G)</Text>
             <Input
