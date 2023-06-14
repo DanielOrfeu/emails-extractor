@@ -59,7 +59,7 @@ export default function Home() {
               arrobas++;
   
               let ids:string[] = []
-              let newLine = text[findArroba - 1] === '\n'
+              let newLine = text[findArroba - 1] === '\n' || text[findArroba - 1] === ' '
               
               if (
                 text[findArroba - (newLine ? 2 : 1)] === '}' ||
@@ -92,8 +92,10 @@ export default function Home() {
                     sub.lastIndexOf(';'),
                     sub.lastIndexOf('/'),
                     sub.lastIndexOf('|'),
-                ) || 0;
+                    sub.lastIndexOf('|'),
+                );
 
+                initID = initID === -1 ? 0 : initID
                 removeText = initID;
 
                 let id:string = sub.slice(initID);
