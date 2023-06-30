@@ -131,7 +131,7 @@ export default function Home() {
             <Button colorScheme='teal' onClick={() => {
               extractEmails(inputText)
               setinputText('');
-            }}>Converter</Button>
+            }}>Extrair emails</Button>
 
             <Text mb='8px'>Saída:</Text>
             <Textarea
