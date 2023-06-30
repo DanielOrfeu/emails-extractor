@@ -82,6 +82,8 @@ export default function Home() {
                     ids = idsString.split(';')
                 } else if (idsString.indexOf('|') !== -1){
                     ids = idsString.split('|')
+                } else {
+                  ids = [idsString]
                 }
 
             } else { //Se @ faz parte de individual
